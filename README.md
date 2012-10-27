@@ -3,9 +3,9 @@ A chess engine written in Clojure.
 
 ## Usage
 
-lein repl for now
+`lein repl` for now
 
-lein test to run the tests
+`lein test` to run the tests
 
 ## License
 
