@@ -1,4 +1,5 @@
 /pom.xml
+*.DS_STORE
 *jar
 *.swp
 /lib

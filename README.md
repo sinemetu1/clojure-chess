@@ -4,6 +4,7 @@ A chess engine written in Clojure.
 ## Usage
 
 lein repl for now
+lein test to run the tests
 
 ## License
 
