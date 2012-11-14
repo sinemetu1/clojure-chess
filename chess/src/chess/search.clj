@@ -6,7 +6,7 @@
 
 (defn negaMax [board depth pov]
   (assert (keyword? pov))
-  (debug (str "negaMax depth : " depth " pov: " best) (:fine debugLevels))
+  (debug (str "negaMax depth : " depth " pov: " pov) (:fine debugLevels))
   (if (<= depth 0)
     (evaluate board pov)
 

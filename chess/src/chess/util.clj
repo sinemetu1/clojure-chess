@@ -1,11 +1,11 @@
 (ns chess.util)
 
-(def ^{:private true}
-  currDebug 0)
+(def
+  debugLevel 1)
 
 (def ^{:private true}
   traces
-  ["make-move"])
+  [])
 
 (def debugLevels
   {:coarse 1
@@ -14,7 +14,7 @@
 (defn debug
   "A debugging mechanism for the chess program."
   [message level]
-  (if (<= level currDebug) (println message)
+  (if (<= level debugLevel) (println message)
     ; else if the message is at a finer log level
     ; but it has been setup as a trace
     (doseq [trace traces]

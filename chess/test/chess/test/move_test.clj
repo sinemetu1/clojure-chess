@@ -486,7 +486,7 @@
   ;;make the move
   (make-move board 16 17)
   (print-board @board)
-  (unamke-move board)
+  (unmake-move board)
   (print-board @board))
 
 

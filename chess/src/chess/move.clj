@@ -3,27 +3,37 @@
   (:use chess.bitboard)
   (:use chess.util))
 
+(def ;^{:private true}
+  prev-boards
+  (atom '()))
+
 ;; The moves that have been made
 (def ;^{:private true}
   moves-made
   (atom '()))
 
+(defn- push
+  [item target]
+  (dosync
+    (swap! target
+             (partial cons item))))
+(defn- my-pop
+  [target]
+  (let [popped (first @target)]
+    (dosync
+      (swap! target rest))
+    popped))
+
 (defn- pushMove
   "Pushes a move onto the moves-made list."
   [aMove move-list]
   (debug (str "pushMove : " aMove) (:fine debugLevels))
-  (dosync
-    (swap! move-list
-             (partial cons aMove))))
+  (push aMove move-list))
 
 (defn- popMove
   "Pops a move from the moves-made list."
   [move-list]
-  (let [popped (first @move-list)]
-    (debug (str "popMove : " popped) (:fine debugLevels))
-    (dosync
-      (swap! move-list rest))
-    popped))
+  (my-pop move-list))
 
 (defn- create-move
   "Creates a move map."
@@ -333,7 +343,7 @@
 (defn unmake-move
   "Unmakes the last move that was pushed and returns the new board."
   ([board move-list]
-    (debug (str "unmake-move board : " board) (:coarse debugLevels))
+    (debug (str "unmake-move board : " @board) (:coarse debugLevels))
     (debug (str "unmake-move move-list : " move-list) (:fine debugLevels))
     (let [lastMove (popMove move-list)]
       (if (seq lastMove)
@@ -345,27 +355,46 @@
                 to       (:to lastMove)
                 toKey    (:toKey lastMove)]
             (debug (str "unmake-move lastMove:" lastMove) (:coarse debugLevels))
-            (if capture?
-              (do
-                ;; Unmake the capturer move
-                (let [nMove (popMove move-list)]
-                  (move board (:color nMove)
-                              (:to nMove)
-                              (:fromKey nMove)
-                              (:from nMove)
-                              (:fromKey nMove)
-                              (:capture nMove)
-                              move-list))
-                ;; Unmake the captured piece
-                (move board color from fromKey from toKey false move-list))
-                ;; No capture, just unmake the move
-                (move board color to fromKey from toKey false move-list)))))))
+            (let [unmadeBoard 
+                  (if capture?
+                    (do
+                      ;; Unmake the capturer move
+                      (let [nMove (popMove move-list)]
+                        (move board (:color nMove)
+                                    (:to nMove)
+                                    (:fromKey nMove)
+                                    (:from nMove)
+                                    (:fromKey nMove)
+                                    (:capture nMove)
+                                    move-list))
+                      ;; Unmake the captured piece
+                      (move board color from fromKey from toKey false move-list))
+                      ;; No capture, just unmake the move
+                      (move board color to fromKey from toKey false move-list))]
+              (debug (str "unmake-move unmadeBoard:" unmadeBoard) (:coarse debugLevels))
+              (print-board unmadeBoard)
+
+              ;; If we're in debug mode then let's assert that unmake-move
+              ;; unmade the board properly
+              (if (> debugLevel 0)
+                (do
+                  (let [prevBoard (my-pop prev-boards)
+                        success?  (is-board-equal @prevBoard unmadeBoard)]
+                    (debug (str "unmake-move prevBoard:" @prevBoard " success?:" success?)
+                           (:coarse debugLevels))
+                    (assert success?))))
+              ;; return
+              unmadeBoard))))))
   ([board]
    (unmake-move board moves-made)))
 
 (defn make-move 
   "Makes a move on the board and returns the new board."
   ([board from to move-list]
+    ;; If we're in debug mode then let's save this board
+    ;; so that we can verify during unmake-move
+    (if (> debugLevel 0)
+      (push board prev-boards))
     (debug (str "make-move from : " from " to : " to " board : " board) (:coarse debugLevels))
     (debug (str "make-move move-list : " move-list) (:fine debugLevels))
     (dosync
@@ -387,7 +416,9 @@
                  ;"to" to "toKey" toKey "capture" capture?)))
 
         ;; Make the move
-        (move board colorKey from fromKey to toKey capture? move-list))))
+        (let [newBoard (move board colorKey from fromKey to toKey capture? move-list)]
+          (debug (str "make-move newBoard:" newBoard) (:coarse debugLevels))
+          newBoard))))
   ([board from to]
    (make-move board from to moves-made)))
 

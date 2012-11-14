@@ -13,6 +13,18 @@
    :nKing      (biginteger 2r0001000000000000000000000000000000000000000000000000000000010000),
    :moves-made '()})
 
+(defn is-board-equal
+  [b1 b2]
+  (and
+    (= (:nWhite b1) (:nWhite b2))
+    (= (:nBlack b1) (:nBlack b2))
+    (= (:nPawn b1) (:nPawn b2))
+    (= (:nKnight b1) (:nKnight b2))
+    (= (:nBishop b1) (:nBishop b2))
+    (= (:nRook b1) (:nRook b2))
+    (= (:nQueen b1) (:nQueen b2))
+    (= (:nKing b1) (:nKing b2))))
+
 (def ^{:private true}
   board-array-string
   (make-array String 64))
