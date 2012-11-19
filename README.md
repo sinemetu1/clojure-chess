@@ -3,9 +3,9 @@ A chess engine written in Clojure.
 
 ## Usage
 
-`lein repl` for now
+`lein repl` to run
 
-`lein test` to run the tests
+`lein midje` to run the tests
 
 ## Notes
 This is a work in progress.
