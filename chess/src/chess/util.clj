@@ -1,7 +1,7 @@
 (ns chess.util)
 
 (def
-  debugLevel 1)
+  debugLevel 0)
 
 (def ^{:private true}
   traces

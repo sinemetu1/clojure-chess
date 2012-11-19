@@ -90,7 +90,9 @@
   
   (perftest board 1 :nWhite) => 14
   (perftest board 2 :nWhite) => 191
-  (perftest board 3 :nWhite) => 2812)
+  (perftest board 3 :nWhite) => 2812) ; Failing!
+  ; The 28 bit of :nBlack is set, but no piece-type for this bit is set? Hmmm
+
   ;(perftest board 4 :nWhite) => 43238
   ;(perftest board 5 :nWhite) => 674624)
 
@@ -122,7 +124,7 @@
   
   (perftest board 1 :nWhite) => 6
   (perftest board 2 :nWhite) => 264
-  (perftest board 3 :nWhite) => 9467)
+  (perftest board 3 :nWhite) => 9467) ; Failing!
   ;(perftest board 4 :nWhite) => 422333
   ;(perftest board 5 :nWhite) => 15833292)
 
