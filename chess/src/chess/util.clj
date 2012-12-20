@@ -5,7 +5,7 @@
 
 (def ^{:private true}
   traces
-  [])
+  ["move" "get-move" "make-move"])
 
 (def debugLevels
   {:coarse 1

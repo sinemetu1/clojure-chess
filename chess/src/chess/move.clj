@@ -199,6 +199,7 @@
 (defmulti get-move
   "Returns a vector of valid moves (to value) for this piece."
   (fn [board pos] 
+    (debug (str "get-move multi pos : " pos " board : " board) (:coarse debugLevels))
     (if (not (keyword? pos)) (get-piece-type @board pos))))
 
 (defmethod get-move :nPawn [board pos]
@@ -337,6 +338,9 @@
            (fn [b]
              (let [leBoard (assoc b color (make-bigint-move (color b) from to)
                                     fromKey (make-bigint-move (fromKey b) from to))]
+               (debug (str "move isWhite17set? : " (test-bit (:nWhite leBoard) 17)
+                           "piece-type : " (get-piece-type leBoard 17))
+                      (:coarse debugLevels))
                (if capture?
                  (let [capturedColor (cond
                                        (= color :nWhite) :nBlack

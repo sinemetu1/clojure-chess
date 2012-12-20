@@ -131,49 +131,43 @@
 
 
 
-;*** before make-move
-
-;BR :   :   :   :BK :   :   :BR :
-;WP :BP :BP :BP :   :BP :BP :BP :
-   ;:BB :   :   :   :BN :BB :WN :
-;BN :WP :WP :   :   :   :   :   :
-;WB :WB :   :   :WP :   :   :   :
-;BQ :   :   :   :   :WN :   :   :
-;WP :BP :   :WP :   :   :WP :WP :
-;WR :   :   :WQ :   :WR :WK :   :
-
-;submoves #<Atom@16fbcb70: ()>
-;*** after make-move
-
-;BR :   :   :   :BK :   :   :BR :
-;WP :BP :BP :BP :   :BP :BP :BP :
-   ;:BB :   :   :   :BN :BB :WN :
-;BN :WP :WP :   :   :   :   :   :
-;WB :WB :   :   :WP :   :   :   :
-   ;:BQ :   :   :   :WN :   :   :
-;WP :BP :   :WP :   :   :WP :WP :
-;WR :   :   :WQ :   :WR :WK :   :
-
-;submoves #<Atom@16fbcb70: ({:color :nBlack, :from 16, :fromKey :nQueen, :to 17, :toKey nil, :capture false})>
-;*** before unmake-move
-
-;BR :   :   :   :BK :   :   :BR :
-;WP :BP :BP :BP :   :BP :BP :BP :
-   ;:BB :   :   :   :BN :BB :WN :
-;BN :WP :WP :   :   :   :   :   :
-;BB :WB :   :   :WP :   :   :   :
-   ;:WQ :   :   :   :WN :   :   :
-;WP :BP :   :WP :   :   :WP :WP :
-;WR :   :   :WQ :   :WR :WK :   :
-
-;submoves #<Atom@16fbcb70: ({:color :nBlack, :from 16, :fromKey :nQueen, :to 17, :toKey nil, :capture false})>
-;*** after unmake-move
-
-;BR :   :   :   :BK :   :   :BR :
-;WP :BP :BP :BP :   :BP :BP :BP :
-   ;:BB :   :   :   :BN :BB :WN :
-;BN :WP :WP :   :   :   :   :   :
-;BB :WB :   :   :WP :   :   :   :
-;BQ :   :   :   :   :WN :   :   :
-;WP :BP :   :WP :   :   :WP :WP :
-;WR :   :   :WQ :   :WR :WK :   :
+;make-move newBoard:{:nKing 1152921504606847040, :nPawn 67272545472137984, :moves-made (), :nQueen 131080, :nBlack 10515449936407953920, :nWhite 281502124525929, :nRook 9295429630892703777, :nBishop 72567817764864, :nKnight 35189742895104}
+;get-move multi pos : :nBlack board : clojure.lang.Ref@6690811b
+;get-move key : :nBlack board : clojure.lang.Ref@6690811b
+;get-move multi pos : 9 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 24 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 32 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 41 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 45 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 46 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 49 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 50 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 51 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 53 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 54 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 55 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 56 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 60 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 63 board : clojure.lang.Ref@6690811b
+;move color : :nWhite from : 30 fromKey : :nKnight to : 47 toKey :  capture? : false board : clojure.lang.Ref@6690811b
+;move isWhite17set? : true:nQueen
+;move color : :nBlack from : 17 fromKey : :nQueen to : 16 toKey :  capture? : false board : clojure.lang.Ref@6690811b
+;move isWhite17set? : true
+;make-move from: 16 fromKey: :nQueen to: 18 toKey: 
+;make-move move-list: clojure.lang.Atom@30bd8e3b
+;move color : :nBlack from : 16 fromKey : :nQueen to : 18 toKey :  capture? : false board : clojure.lang.Ref@6690811b
+;move isWhite17set? : true
+;make-move newBoard:{:nKing 1152921504606847040, :nPawn 67272545472137984, :moves-made (), :nQueen 262152, :nBlack 10515449936408216064, :nWhite 422238539139433, :nRook 9295429630892703777, :nBishop 72567817764864, :nKnight 175926157508608}
+;get-move multi pos : :nWhite board : clojure.lang.Ref@6690811b
+;get-move key : :nWhite board : clojure.lang.Ref@6690811b
+;get-move multi pos : 0 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 3 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 5 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 6 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 8 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 11 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 14 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 15 board : clojure.lang.Ref@6690811b
+;get-move multi pos : 17 board : clojure.lang.Ref@6690811b
+;get-move key : 17 board : clojure.lang.Ref@6690811b
+;AssertionError Assert failed: (keyword? aKey)  chess.move/eval181/fn--182 (move.clj:300)
