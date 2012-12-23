@@ -12,16 +12,9 @@
   (make-move board 8 16)
   (:nPawn @board)  => 2r0000000011111111000000000000000000000000000000011111111000000000
   (:nWhite @board) => 2r11111111011111111
-  (unmake-move board))
-
-(fact
-  "Testing of unmake-move of white pawn from a3 -> a2"
-  (def board (ref (create-board)))
-  (make-move board 8 16)
   (unmake-move board)
-  (:nPawn @board)  => 2r0000000011111111000000000000000000000000000000001111111100000000
-  (:nWhite @board) => 2r1111111111111111)
-
+  (:nPawn @board) => 2r0000000011111111000000000000000000000000000000001111111100000000
+  (:nWhite @board) => 2r0000000000000000000000000000000000000000000000001111111111111111)
 
 ;; Testing make/unmake-move with capture of same piece type
 (fact
@@ -31,12 +24,6 @@
   (:nPawn @board)  => 2r0000000011111111000000000000000000000000000000001111111000000000
   (:nWhite @board) => 2r0000000000000001000000000000000000000000000000001111111011111111
   (:nBlack @board) => 2r1111111111111110000000000000000000000000000000000000000000000000
-  (unmake-move board))
-
-(fact
-  "Testing of unmake-move of white pawn capture of black pawn from a7 -> a2"
-  (def board (ref (create-board)))
-  (make-move board 8 48)
   (unmake-move board)
   (:nPawn @board)  => 2r0000000011111111000000000000000000000000000000001111111100000000
   (:nWhite @board) => 2r1111111111111111
@@ -53,19 +40,15 @@
   (:nWhite @board)  => 2r0000000000000001000000000000000000000000000000001111111111111101
   (:nBlack @board)  => 2r1111111111111110000000000000000000000000000000000000000000000000
   (unmake-move board)
-  (unmake-move board))
-
-(fact
-  "Testing of unmake-move of white knight capture of black pawn from a7 -> a2"
-  (def board (ref (create-board)))
-  (make-move board 1 16)
-  (make-move board 16 48)
-  (unmake-move board)
   (:nPawn @board)   => 2r0000000011111111000000000000000000000000000000001111111100000000
   (:nKnight @board) => 2r0100001000000000000000000000000000000000000000010000000001000000
   (:nWhite @board)  => 2r0000000000000000000000000000000000000000000000011111111111111101
   (:nBlack @board)  => 2r1111111111111111000000000000000000000000000000000000000000000000
-  (unmake-move board))
+  (unmake-move board)
+  (:nPawn @board)   => 2r0000000011111111000000000000000000000000000000001111111100000000
+  (:nKnight @board) => 2r0100001000000000000000000000000000000000000000000000000001000010
+  (:nWhite @board)  => 2r0000000000000000000000000000000000000000000000001111111111111111
+  (:nBlack @board)  => 2r1111111111111111000000000000000000000000000000000000000000000000)
 
 ;; Testing get-move
 
@@ -455,60 +438,3 @@
   (make-move board 60 19)
   (in-check? board 19) => true
   (unmake-move board))
-
-;; Bug test
-(fact
-  "Testing bug in perft 4"
-  (def board (ref (create-board)))
-  ;; removing black pieces
-  (make-move board 0 52)
-  (make-move board 52 0)
-;make-move :nBlack 24 :nBishop 17 :nQueen true
-  ; setup board
-  (make-move board 1 47)
-  (make-move board 2 25)
-  (make-move board 6 21)
-  (make-move board 5 24)
-  (make-move board 4 6)
-  (make-move board 7 5)
-  (make-move board 9 17)
-  (make-move board 48 9)
-  (make-move board 17 33)
-  (make-move board 13 48)
-  (make-move board 10 34)
-  (make-move board 12 28)
-  (make-move board 57 32)
-  (make-move board 59 16)
-  (make-move board 61 41)
-  (make-move board 58 46)
-  (make-move board 62 45)
-  
-  ;;make the move
-  (make-move board 16 17)
-  (print-board @board)
-  (unmake-move board)
-  (print-board @board))
-
-
-;*** before make-move
-
-;BR :   :   :   :BK :   :   :BR :
-;WP :BP :BP :BP :   :BP :BP :BP :
-   ;:BB :   :   :   :BN :BB :WN :
-;BN :WP :WP :   :   :   :   :   :
-;WB :WB :   :   :WP :   :   :   :
-;BQ :   :   :   :   :WN :   :   :
-;WP :BP :   :WP :   :   :WP :WP :
-;WR :   :   :WQ :   :WR :WK :   :
-
-;submoves #<Atom@16fbcb70: ()>
-;*** after make-move
-
-;BR :   :   :   :BK :   :   :BR :
-;WP :BP :BP :BP :   :BP :BP :BP :
-   ;:BB :   :   :   :BN :BB :WN :
-;BN :WP :WP :   :   :   :   :   :
-;WB :WB :   :   :WP :   :   :   :
-   ;:BQ :   :   :   :WN :   :   :
-;WP :BP :   :WP :   :   :WP :WP :
-;WR :   :   :WQ :   :WR :WK :   :
