@@ -1,11 +1,10 @@
 (ns chess.util)
 
-(def
-  debugLevel 0)
+(def debugLevel 0)
 
 (def ^{:private true}
   traces
-  ["move" "get-move" "make-move"])
+  [])
 
 (def debugLevels
   {:coarse 1

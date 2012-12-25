@@ -43,39 +43,24 @@
 
 (defn perftest [board depth pov]
   (assert (keyword? pov))
-  (debug (str "perftest pov : " pov " depth: " depth " board : " board) (:coarse debugLevels))
+  (debug (str "perftest pov : " pov " depth: " depth " board : " @board) (:coarse debugLevels))
   (loop [moves (get-legal-move board pov)
          node-count 0
          local-moves (atom '())]
     (if (and (seq moves) (> depth 1))
       (do
+          (let [aMove (first moves)]
+            (debug (str "perftest move-to-make : " aMove) (:coarse debugLevels))
+            (debug (str "perftest *** before make-move : " @board) (:fine debugLevels))
+            ;; make the move
+            (make-move board (:from aMove) (:to aMove))
+            (debug (str "perftest *** after make-move : " @board) (:fine debugLevels)))
 
-          (debug (str "perftest *** before make-move : " @board) (:fine debugLevels))
-          ;(debug (str "perftest piece type at 17 : " (get-piece-type @board 17))
-                 ;(:fine debugLevels))
-          ;(debug (str "perftest local-moves : " local-moves) (:fine debugLevels))
-
-          (make-move board (:from (first moves)) (:to (first moves)) local-moves)
-
-          (debug (str "perftest *** after make-move : " @board) (:fine debugLevels))
-          ;(debug (str "perftest piece type at 17 : " (get-piece-type @board 17))
-                 ;(:fine debugLevels))
-          ;(debug (str "perftest sub local-moves : " local-moves) (:fine debugLevels))
-
+        ;; make submove is there is another level left
         (let [subMoves (perftest board (dec depth) (get-opposing-color pov))]
-
           (debug (str "perftest *** before unmake-move : " @board) (:fine debugLevels))
-          ;(debug (str "perftest piece type at 17 : " (get-piece-type @board 17))
-                 ;(:fine debugLevels))
-          ;(debug (str "perftest sub local-moves : " local-moves) (:fine debugLevels))
-
-          (unmake-move board local-moves)
-
+          (unmake-move board)
           (debug (str "perftest *** after unmake-move : " @board) (:fine debugLevels))
-          ;(debug (str "perftest piece type at 17 : " (get-piece-type @board 17))
-                 ;(:fine debugLevels))
-          ;(debug (str "perftest sub local-moves : " local-moves) (:fine debugLevels))
-
           (recur (rest moves)
                  (+ node-count subMoves)
                  local-moves)))

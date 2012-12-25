@@ -80,13 +80,14 @@
   (and (>= pos 0) (< pos 64)))
 
 (defn- test-bit [b bit]
-  (.testBit b bit))
+  (if (< bit 0) false
+    (.testBit b bit)))
 
 (defn- not-occupied?
   "Tests whether a bit is set for a valid position."
-  [board pos k]
+  [board pos aKey]
   (and (valid-pos? pos)
-       (not (test-bit (k board) pos))))
+       (not (test-bit (aKey board) pos))))
 
 (defn- move-made-properly?
   "Test to see whether the move was made correctly."
@@ -106,6 +107,20 @@
   (make-bigint-set
     (make-bigint-clear (biginteger old) from)
     to))
+
+(defn has-piece-type
+  "Returns a boolean for whether a piece is in the position provided."
+  [board pos]
+  (let [ret (cond
+              (test-bit (:nPawn board) pos)   true
+              (test-bit (:nKnight board) pos) true
+              (test-bit (:nBishop board) pos) true
+              (test-bit (:nRook board) pos)   true
+              (test-bit (:nQueen board) pos)  true
+              (test-bit (:nKing board) pos)   true
+              :else false)]
+    (debug (str "has-piece-type ret : " ret) (:fine debugLevels))
+    ret))
 
 (defn get-piece-type
   "Returns a key for the piece type in the position provided."
@@ -140,7 +155,24 @@
    (cond
      (= aKey :nWhite) :nBlack
      (= aKey :nBlack) :nWhite
-     :else false) ))
+     :else false)))
+
+(defn- get-positions-by-key
+  "Returns a sequence of occupied positions."
+  [board aKey]
+  (assert (keyword? aKey))
+  (let [bits (aKey @board)]
+    (for [pos (range 0 64) :when (test-bit bits pos)]
+      pos)))
+
+(defn- occupied-positions-have-types
+  [board]
+  (doseq [aKey [:nWhite :nBlack :nPawn :nKnight :nBishop :nRook :nQueen :nKing]
+          pos  (get-positions-by-key board aKey)]
+    (let [good? (has-piece-type @board pos)]
+      (if (not good?) (debug (str "occupied-positions-have-types aKey : " aKey " pos : " pos)
+                             (:coarse debugLevels)))
+      (assert good?))))
 
 ;; Ray creating functions
 (defn- ray-it 
@@ -204,16 +236,23 @@
 
 (defmethod get-move :nPawn [board pos]
   (let [oppColor (get-opposing-color @board pos)
+        color    (get-piece-color @board pos)
         move7    (if (= oppColor :nBlack) (+ pos 7) (- pos 7))
         move8    (if (= oppColor :nBlack) (+ pos 8) (- pos 8))
         move9    (if (= oppColor :nBlack) (+ pos 9) (- pos 9))
         move16   (if (= oppColor :nBlack) (if (and (in-file :1 pos)
+                                                   ;; TODO: optimize with .or
                                                    (not (test-bit (oppColor @board) (+ pos 8)))
-                                                   (not (test-bit (oppColor @board) (+ pos 16))))
+                                                   (not (test-bit (oppColor @board) (+ pos 16)))
+                                                   (not (test-bit (color @board) (+ pos 8)))
+                                                   (not (test-bit (color @board) (+ pos 16))))
                                             (+ pos 16))
                                           (if (and (in-file :6 pos)
+                                                   ;; TODO: optimize with .or
                                                    (not (test-bit (oppColor @board) (- pos 8)))
-                                                   (not (test-bit (oppColor @board) (- pos 16))))
+                                                   (not (test-bit (oppColor @board) (- pos 16)))
+                                                   (not (test-bit (color @board) (- pos 8)))
+                                                   (not (test-bit (color @board) (- pos 16))))
                                             (- pos 16)))
         attack7? (test-bit (oppColor @board) move7)
         forward? (not (test-bit (.or (:nWhite @board) (:nBlack @board)) move8))
@@ -298,19 +337,14 @@
 (defmethod get-move :default [board aKey]
   (debug (str "get-move key : " aKey " board : " board) (:coarse debugLevels))
   (assert (keyword? aKey))
-  (loop [oppBits (aKey @board)
-         currBit (.getLowestSetBit oppBits)
+  (loop [positions (get-positions-by-key board aKey)
          moves []]
-    (let [nextBits (make-bigint-clear oppBits currBit)]
-      ;(debug (str "get-move loop nextBits : " nextBits
-                  ;" oppBits : " board " currBit : " currBit)
-             ;(:fine debugLevels))
-
-      (if (and (pos? nextBits) (pos? oppBits) (valid-pos? currBit))
-          (recur nextBits
-                 (.getLowestSetBit nextBits)
-                 (concat moves (get-move board currBit)))
-        (concat moves (get-move board currBit))))))
+      (debug (str "get-move loop positions : " positions) (:coarse debugLevels))
+    (let [positionsLeft (rest positions)]
+      (if (seq positionsLeft)
+          (recur positionsLeft
+                 (concat moves (get-move board (first positions))))
+        (concat moves (get-move board (first positions)))))))
 
 (defn in-check?
   "Tests whether a king is in check in a position."
@@ -333,26 +367,23 @@
   [board color from fromKey to toKey capture? move-list]
   (debug (str "move color : " color " from : " from " fromKey : " fromKey
               " to : " to " toKey : " toKey " capture? : " capture?
-              " board : " board) (:fine debugLevels))
+              " board : " @board) (:fine debugLevels))
     (alter board
            (fn [b]
              (let [leBoard (assoc b color (make-bigint-move (color b) from to)
                                     fromKey (make-bigint-move (fromKey b) from to))]
-               (debug (str "move isWhite17set? : " (test-bit (:nWhite leBoard) 17)
-                           "piece-type : " (get-piece-type leBoard 17))
-                      (:coarse debugLevels))
+               (debug (str "move piece-type : " (get-piece-type leBoard 17) " board : " leBoard) (:coarse debugLevels))
                (if capture?
                  (let [capturedColor (cond
                                        (= color :nWhite) :nBlack
                                        (= color :nBlack) :nWhite)]
                    ;; Push the move onto the stack
                    (pushMove (create-move capturedColor to toKey to nil true) move-list)
-
                    ;; Capture the piece
-                   (if (= fromKey toKey)
-                     (capture-piece leBoard capturedColor to capturedColor)
-                     (capture-piece leBoard capturedColor to toKey)))
-                 
+                   (let [capturedBoard (if (= fromKey toKey)
+                                         (capture-piece leBoard capturedColor to capturedColor)
+                                         (capture-piece leBoard capturedColor to toKey))]
+                     capturedBoard))
                  ;; No capture, just return the moved piece
                  leBoard)))))
 
@@ -362,6 +393,9 @@
     (debug (str "unmake-move board : " @board) (:coarse debugLevels))
     (debug (str "unmake-move move-list : " move-list) (:fine debugLevels))
     (let [lastMove (popMove move-list)]
+      ;; lastMove in most cases is just that
+      ;; * except in a captured move, it is the move to put the captured piece
+      ;;   back onto the board
       (if (seq lastMove)
         (dosync
           (let [capture? (:capture lastMove)
@@ -371,29 +405,48 @@
                 to       (:to lastMove)
                 toKey    (:toKey lastMove)]
             (debug (str "unmake-move lastMove:" lastMove) (:coarse debugLevels))
+            (if (> debugLevel 0)
+              (do
+                ;; assert that where we're moving back to is not occupied
+                (assert (false? (test-bit (color @board) from)))
+                (if capture?
+                  (assert (true? (test-bit ((get-opposing-color color) @board) from)))
+                  (assert (false? (test-bit ((get-opposing-color color) @board) from))))))
             (let [unmadeBoard 
                   (if capture?
                     (do
                       ;; Unmake the capturer move
                       (let [nMove (popMove move-list)]
-                        (move board (:color nMove)
-                                    (:to nMove)
-                                    (:fromKey nMove)
-                                    (:from nMove)
-                                    (:fromKey nMove)
-                                    (:capture nMove)
-                                    move-list))
-                      ;; Unmake the captured piece
-                      (move board color from fromKey from toKey false move-list))
+                        (debug (str "unmake-move nMove:" nMove) (:coarse debugLevels))
+                        (move board (:color nMove) (:to nMove) (:fromKey nMove) (:from nMove) (:fromKey nMove) false ())
+                        ;; assert that "to" of capturing move and "from" of captured move are the same
+                        (if (> debugLevel 0)
+                          (do
+                            (assert (true? (= (:to nMove) from)))
+                            ;; assert that we've moved back the capturing piece
+                            (assert (true? (test-bit ((:fromKey nMove) @board) (:from nMove))))
+                            (assert (true? (test-bit ((:color nMove) @board) (:from nMove))))
+                            ;; assert the type of the capturing piece at the moved-back location
+                            (assert (true? (= (get-piece-type @board (:from nMove))
+                                              (:fromKey nMove))))
+                            ;; assert that there is no leftover piece at the captured location
+                            (assert (false? (test-bit (fromKey @board) from)))))
+                        ;; Unmake the captured piece
+                        (move board color from fromKey from fromKey false ())))
                       ;; No capture, just unmake the move
-                      (move board color to fromKey from toKey false move-list))]
+                      (move board color to fromKey from toKey false ()))]
+              
               (debug (str "unmake-move unmadeBoard:" unmadeBoard) (:coarse debugLevels))
-              ;(print-board unmadeBoard)
 
               ;; If we're in debug mode then let's assert that unmake-move
               ;; unmade the board properly
               (if (> debugLevel 0)
                 (do
+                  ;; assert that the lastMove was unmade properly
+                  (assert (true? (test-bit (color @board) from)))
+                  (assert (false? (test-bit ((get-opposing-color color) @board) from)))
+                  (assert (true? (test-bit (fromKey @board) from)))
+                  (assert (true? (= (get-piece-type @board from) fromKey)))
                   (let [prevBoard (my-pop prev-boards)
                         success?  (is-board-equal @prevBoard unmadeBoard)]
                     (debug (str "unmake-move prevBoard:" @prevBoard " success?:" success?)
@@ -417,32 +470,31 @@
             toKey    (get-piece-type @board to)
             capture? (not (nil? toKey))]
         (debug (str "make-move from: " from " fromKey: " fromKey
-                    " to: " to " toKey: " toKey) (:coarse debugLevels))
+                    " to: " to " toKey: " toKey " color:" colorKey) (:coarse debugLevels))
         (debug (str "make-move move-list: " move-list) (:fine debugLevels))
         ;; Add the move to our move list
         (pushMove (create-move colorKey from fromKey to nil false) move-list)
-        ;(if (and (= :nQueen (get-piece-type @board 17))
-                 ;(= :nWhite (get-piece-color @board 17)))
-          ;(do
-            ;(println "making move" move-list)
-            ;(print-board @board)))
-        ;(if (= to 17)
-          ;(do
-            ;(print-board @board)
-            ;(println "make-move" "ckey" colorKey "from" from "fromkey" fromKey
-                 ;"to" to "toKey" toKey "capture" capture?)))
-
         ;; Make the move
         (let [newBoard (move board colorKey from fromKey to toKey capture? move-list)]
-          ;; If we're in debug mode then let's assert that make-move
-          ;; made the board properly
           (if (> debugLevel 0)
+            ;; If we're in debug mode then let's assert that make-move
+            ;; made the board properly
             (do
+              (assert (true? (test-bit (colorKey newBoard) to)))
+              (assert (true? (test-bit (fromKey newBoard) to)))
+              (assert (false? (test-bit (colorKey newBoard) from)))
+              (assert (false? (test-bit (fromKey newBoard) from)))
+              ;(occupied-positions-have-types (ref newBoard))
+              (if capture? (and (if (not (= fromKey toKey))
+                                  (assert (false? (test-bit (toKey newBoard) to)))
+                                  true)
+                                (assert (false? (test-bit ((get-opposing-color colorKey) newBoard) to)))))
               (let [success? (move-made-properly? newBoard from fromKey to toKey)]
                 (debug (str "make-move prevBoard:" @board " success?:" success?
                             "\r\nnewBoard:" newBoard) (:coarse debugLevels))
                 (assert success?))))
           (debug (str "make-move newBoard:" newBoard) (:coarse debugLevels))
+
           newBoard))))
   ([board from to]
    (make-move board from to moves-made)))
